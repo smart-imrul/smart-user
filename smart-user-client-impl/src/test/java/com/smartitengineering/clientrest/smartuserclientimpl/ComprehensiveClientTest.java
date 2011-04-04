@@ -731,6 +731,7 @@ public class ComprehensiveClientTest {
 
   @Test
   public void doTestAuthoriztionForAdminUser() {
+    LOGGER.info("Test AUTHORIZATION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     sitelAdminRootResource = login("admin@SITEL", "adminadmin");
     sitelAdminUserLoginResource = sitelAdminRootResource.getLoginResource();
     Assert.assertNotNull(sitelAdminUserLoginResource);
