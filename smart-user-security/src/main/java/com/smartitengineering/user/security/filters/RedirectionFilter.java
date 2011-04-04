@@ -5,6 +5,7 @@
 package com.smartitengineering.user.security.filters;
 
 import java.io.IOException;
+import java.net.URI;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -36,6 +37,8 @@ public class RedirectionFilter implements Filter {
   // Configured params
   private String[] browserIds;
   private String loginUri;
+  private static URI loginRedirectUri;
+  private static String loginRedirectUrl;
 
   @Override
   public void init(FilterConfig fc) throws ServletException {
@@ -56,10 +59,19 @@ public class RedirectionFilter implements Filter {
     final HttpServletRequest httpRequest = (HttpServletRequest) request;
 
     final String contextPath = httpRequest.getContextPath();
-    final String loginRedirectUrl = new StringBuilder("http://").append(httpRequest.getHeader(HttpHeaders.HOST)).append(StringUtils.
-        isBlank(contextPath) ? "/" : contextPath).append(loginUri).toString();
+    if (loginRedirectUri == null) {
+      synchronized (this) {
+        if (loginRedirectUri == null) {
+          loginRedirectUrl = new StringBuilder("http://").append(httpRequest.getHeader(HttpHeaders.HOST)).
+              append(StringUtils.isBlank(contextPath) ? "/" : contextPath).append(contextPath.endsWith("/") && loginUri.
+              startsWith("/") ? loginUri.substring(1) : loginUri).toString();
+          loginRedirectUri = URI.create(loginRedirectUrl);
+        }
+      }
+    }
     if (logger.isInfoEnabled()) {
       logger.info("login url " + loginUri);
+      logger.info("Context path " + contextPath);
       logger.info("login url to check for " + loginRedirectUrl);
       String requestUrl = getRequestUrl(httpRequest);
       logger.info("Request url is " + requestUrl);
@@ -73,7 +85,8 @@ public class RedirectionFilter implements Filter {
 
         @Override
         public void sendRedirect(String location) throws IOException {
-          if (location.startsWith(loginRedirectUrl)) {
+          if (location.startsWith(loginRedirectUrl) && URI.create(location).getPath().equals(loginRedirectUri.
+              getPath())) {
             setStatus(Status.UNAUTHORIZED.getStatusCode());
           }
           else {
