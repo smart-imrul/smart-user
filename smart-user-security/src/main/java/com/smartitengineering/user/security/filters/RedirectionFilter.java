@@ -5,6 +5,10 @@
 package com.smartitengineering.user.security.filters;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -32,10 +36,13 @@ public class RedirectionFilter implements Filter {
   public static final String REDIRECTOR_URL = "/";
   public static final String LOGIN_ERROR_PARAM_NAME = "login_error";
   public static final String REDIRECTION_URL_PARAM_NAME = "rurl";
+  private static final Pattern JSESSIONID_PATTERN = Pattern.compile("(.*)(;jsessionid=[a-z0-9A-Z]+)(\\?.*)?");
   private Logger logger = LoggerFactory.getLogger(RedirectionFilter.class);
   // Configured params
   private String[] browserIds;
   private String loginUri;
+  private static URI loginRedirectUri;
+  private static String loginRedirectUrl;
 
   @Override
   public void init(FilterConfig fc) throws ServletException {
@@ -56,9 +63,16 @@ public class RedirectionFilter implements Filter {
     final HttpServletRequest httpRequest = (HttpServletRequest) request;
 
     final String contextPath = httpRequest.getContextPath();
-    final String loginRedirectUrl = new StringBuilder("http://").append(httpRequest.getHeader(HttpHeaders.HOST)).append(StringUtils.
-        isBlank(contextPath) ? "/" : contextPath).append(contextPath.endsWith("/") && loginUri.startsWith("/") ? loginUri.
-        substring(1) : loginUri).toString();
+    if (loginRedirectUri == null) {
+      synchronized (this) {
+        if (loginRedirectUri == null) {
+          loginRedirectUrl = new StringBuilder("http://").append(httpRequest.getHeader(HttpHeaders.HOST)).
+              append(StringUtils.isBlank(contextPath) ? "/" : contextPath).append(contextPath.endsWith("/") && loginUri.
+              startsWith("/") ? loginUri.substring(1) : loginUri).toString();
+          loginRedirectUri = URI.create(loginRedirectUrl);
+        }
+      }
+    }
     if (logger.isInfoEnabled()) {
       logger.info("login url " + loginUri);
       logger.info("Context path " + contextPath);
@@ -74,11 +88,30 @@ public class RedirectionFilter implements Filter {
         protected final transient Logger logger = LoggerFactory.getLogger(getClass());
 
         @Override
-        public void sendRedirect(String location) throws IOException {
-          if (location.startsWith(loginRedirectUrl)) {
+        public void sendRedirect(final String location) throws IOException {
+          final URL locationUri;
+          if (location.contains(";jsessionid")) {
+            Matcher matcher = JSESSIONID_PATTERN.matcher(location);
+            if (matcher.matches()) {
+              locationUri =
+              new URL(new StringBuilder(location).replace(matcher.start(2), matcher.end(2), "").toString());
+            }
+            else {
+              locationUri = new URL(location);
+            }
+          }
+          else {
+            locationUri = new URL(location);
+          }
+          if (logger.isInfoEnabled()) {
+            logger.info("Locatin to redirect to " + location + " " + locationUri.getPath());
+          }
+          if (location.startsWith(loginRedirectUrl) && locationUri.getPath().equals(loginRedirectUri.getPath())) {
+            logger.info("Redirected to login page thus sending UNAUTHORIZED - 401");
             setStatus(Status.UNAUTHORIZED.getStatusCode());
           }
           else {
+            logger.info("Redirecting to the URI requested");
             super.sendRedirect(location);
           }
         }
