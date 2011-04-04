@@ -7,6 +7,7 @@ package com.smartitengineering.user.client.impl;
 import com.smartitengineering.user.client.api.LoginResource;
 import com.smartitengineering.user.client.api.RootResource;
 import com.smartitengineering.user.client.api.UriTemplateResource;
+import com.smartitengineering.util.bean.PropertiesLocator;
 import com.smartitengineering.util.opensearch.jaxrs.OpenSearchDescriptorProvider;
 import com.smartitengineering.util.rest.atom.AbstractFeedClientResource;
 import com.smartitengineering.util.rest.client.ApplicationWideClientFactoryImpl;
@@ -18,7 +19,6 @@ import com.smartitengineering.util.rest.client.jersey.cache.CacheableClientConfi
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.atom.abdera.impl.provider.entity.FeedProvider;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.AbstractMap.SimpleEntry;
@@ -27,6 +27,8 @@ import java.util.Properties;
 import javax.ws.rs.core.UriBuilder;
 import org.apache.abdera.model.Feed;
 import org.apache.commons.lang.math.NumberUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -44,24 +46,26 @@ public class RootResourceImpl
   private static final boolean CONNECTION_CONFIGURED;
   private static final URI SMART_USER_BASE_URI;
   private static final ConfigProcessor CONFIG_PROCESSOR = new UserConfigProcessor();
+  public static final Logger LOGGER = LoggerFactory.getLogger(RootResourceImpl.class);
 
   static {
     SMART_USER_CONNECTION_CONFIG = new ConnectionConfig();
     String propFileName = "smart-user-client-config.properties";
-    InputStream inputStream = RootResourceImpl.class.getClassLoader().getResourceAsStream(propFileName);
-    if (inputStream != null) {
+    PropertiesLocator locator = new PropertiesLocator();
+    locator.setSmartLocations(propFileName);
+    final Properties properties = new Properties();
+    try {
+      locator.loadProperties(properties);
+    }
+    catch (IOException ex) {
+      LOGGER.warn("Exception!", ex);
+    }
+    if (!properties.isEmpty()) {
       CONNECTION_CONFIGURED = true;
-      Properties properties = new Properties();
-      try {
-        properties.load(inputStream);
-        SMART_USER_CONNECTION_CONFIG.setBasicUri(properties.getProperty("baseUri", ""));
-        SMART_USER_CONNECTION_CONFIG.setContextPath(properties.getProperty("contextPath", "/"));
-        SMART_USER_CONNECTION_CONFIG.setHost(properties.getProperty("host", "localhost"));
-        SMART_USER_CONNECTION_CONFIG.setPort(NumberUtils.toInt(properties.getProperty("port", ""), 9090));
-      }
-      catch (IOException ex) {
-        ex.printStackTrace();
-      }
+      SMART_USER_CONNECTION_CONFIG.setBasicUri(properties.getProperty("baseUri", ""));
+      SMART_USER_CONNECTION_CONFIG.setContextPath(properties.getProperty("contextPath", "/"));
+      SMART_USER_CONNECTION_CONFIG.setHost(properties.getProperty("host", "localhost"));
+      SMART_USER_CONNECTION_CONFIG.setPort(NumberUtils.toInt(properties.getProperty("port", ""), 9090));
       SMART_USER_BASE_URI = UriBuilder.fromUri(SMART_USER_CONNECTION_CONFIG.getContextPath()).path(SMART_USER_CONNECTION_CONFIG.
           getBasicUri()).host(SMART_USER_CONNECTION_CONFIG.getHost()).port(SMART_USER_CONNECTION_CONFIG.getPort()).
           scheme("http").build();
@@ -73,7 +77,6 @@ public class RootResourceImpl
   }
 
   public static RootResource getInstance(String username, String password) {
-    System.out.println("--------------------Base Uri--------------------------" + BASE_URI.toString());
     usernamePass.set(new SimpleEntry<String, String>(username, password));
     return new RootResourceImpl(username, password);
   }
