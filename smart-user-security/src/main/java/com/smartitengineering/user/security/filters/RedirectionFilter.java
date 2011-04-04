@@ -57,9 +57,11 @@ public class RedirectionFilter implements Filter {
 
     final String contextPath = httpRequest.getContextPath();
     final String loginRedirectUrl = new StringBuilder("http://").append(httpRequest.getHeader(HttpHeaders.HOST)).append(StringUtils.
-        isBlank(contextPath) ? "/" : contextPath).append(loginUri).toString();
+        isBlank(contextPath) ? "/" : contextPath).append(contextPath.endsWith("/") && loginUri.startsWith("/") ? loginUri.
+        substring(1) : loginUri).toString();
     if (logger.isInfoEnabled()) {
       logger.info("login url " + loginUri);
+      logger.info("Context path " + contextPath);
       logger.info("login url to check for " + loginRedirectUrl);
       String requestUrl = getRequestUrl(httpRequest);
       logger.info("Request url is " + requestUrl);
