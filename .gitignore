@@ -6,3 +6,5 @@ target
 *.properties
 *~
 !Bundle.properties
+*.log
+*.log.1
