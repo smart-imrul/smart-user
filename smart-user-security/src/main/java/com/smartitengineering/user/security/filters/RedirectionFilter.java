@@ -33,6 +33,7 @@ public class RedirectionFilter implements Filter {
   public static final String REDIRECTOR_URL = "/";
   public static final String LOGIN_ERROR_PARAM_NAME = "login_error";
   public static final String REDIRECTION_URL_PARAM_NAME = "rurl";
+  private static final Pattern JSESSIONID_PATTERN = Pattern.compile("(.*)(;jsessionid=[a-z0-9A-Z]+)(\\?.*)?");
   private Logger logger = LoggerFactory.getLogger(RedirectionFilter.class);
   // Configured params
   private String[] browserIds;
@@ -84,12 +85,30 @@ public class RedirectionFilter implements Filter {
         protected final transient Logger logger = LoggerFactory.getLogger(getClass());
 
         @Override
-        public void sendRedirect(String location) throws IOException {
-          if (location.startsWith(loginRedirectUrl) && URI.create(location).getPath().equals(loginRedirectUri.
-              getPath())) {
+        public void sendRedirect(final String location) throws IOException {
+          final URL locationUri;
+          if (location.contains(";jsessionid")) {
+            Matcher matcher = JSESSIONID_PATTERN.matcher(location);
+            if (matcher.matches()) {
+              locationUri =
+              new URL(new StringBuilder(location).replace(matcher.start(2), matcher.end(2), "").toString());
+            }
+            else {
+              locationUri = new URL(location);
+            }
+          }
+          else {
+            locationUri = new URL(location);
+          }
+          if (logger.isInfoEnabled()) {
+            logger.info("Locatin to redirect to " + location + " " + locationUri.getPath());
+          }
+          if (location.startsWith(loginRedirectUrl) && locationUri.getPath().equals(loginRedirectUri.getPath())) {
+            logger.info("Redirected to login page thus sending UNAUTHORIZED - 401");
             setStatus(Status.UNAUTHORIZED.getStatusCode());
           }
           else {
+            logger.info("Redirecting to the URI requested");
             super.sendRedirect(location);
           }
         }
