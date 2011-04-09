@@ -140,7 +140,7 @@ public class ComprehensiveTest {
   public void doTestUpdateUser() throws InterruptedException {
     comprehensiveClientTest.doTestUpdateUser();
   }
-  
+
   @Test
   public void doTestUserUpdateSelf() throws InterruptedException {
     comprehensiveClientTest.doTestUserUpdateSelf();
