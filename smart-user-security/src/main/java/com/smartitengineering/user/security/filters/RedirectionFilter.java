@@ -6,6 +6,9 @@ package com.smartitengineering.user.security.filters;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -85,6 +88,7 @@ public class RedirectionFilter implements Filter {
         protected final transient Logger logger = LoggerFactory.getLogger(getClass());
 
         @Override
+
         public void sendRedirect(final String location) throws IOException {
           final URL locationUri;
           if (location.contains(";jsessionid")) {
@@ -105,6 +109,7 @@ public class RedirectionFilter implements Filter {
           }
           if (location.startsWith(loginRedirectUrl) && locationUri.getPath().equals(loginRedirectUri.getPath())) {
             logger.info("Redirected to login page thus sending UNAUTHORIZED - 401");
+
             setStatus(Status.UNAUTHORIZED.getStatusCode());
           }
           else {
