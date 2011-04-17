@@ -16,4 +16,13 @@ public interface UriTemplateResource extends Resource<OpenSearchDescriptor> {
   OrganizationResource getOrganizationForUniqueShortName(String uniqueShortName);
 
   RoleResource getRoleResourceForRoleName(String roleName);
+
+  UserResource getUserResource(String orgUniqueShortName, String username);
+
+  PrivilegeResource getPrivilegeResource (String orgUniqueShortName,  String privilegeName);
+
+  SecuredObjectResource getSecuredObjectResource (String orgUniqueShortName, String securedObjectName);
+
+  UserGroupResource getUserGroupResource (String orgUniqueShortName, String userGroupName);
+
 }

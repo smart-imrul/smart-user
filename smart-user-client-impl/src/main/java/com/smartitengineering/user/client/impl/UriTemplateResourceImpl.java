@@ -5,8 +5,12 @@
 package com.smartitengineering.user.client.impl;
 
 import com.smartitengineering.user.client.api.OrganizationResource;
+import com.smartitengineering.user.client.api.PrivilegeResource;
 import com.smartitengineering.user.client.api.RoleResource;
+import com.smartitengineering.user.client.api.SecuredObjectResource;
 import com.smartitengineering.user.client.api.UriTemplateResource;
+import com.smartitengineering.user.client.api.UserGroupResource;
+import com.smartitengineering.user.client.api.UserResource;
 import com.smartitengineering.util.opensearch.api.OpenSearchDescriptor;
 import com.smartitengineering.util.opensearch.api.Url;
 import com.smartitengineering.util.opensearch.api.Url.Rel;
@@ -51,7 +55,9 @@ public class UriTemplateResourceImpl extends AbstractClientResource<OpenSearchDe
 
   @Override
   public OrganizationResource getOrganizationForUniqueShortName(String templateVal) {
-    ResourceLink link = getResourceLink("org", "{uniqueShortName}", templateVal);
+    String[] replacables = {"{uniqueShortName}"};
+    String[] replacedValus = {templateVal};
+    ResourceLink link = getResourceLink("org", replacables, replacedValus);
     if (link != null) {
       return new OrganizationResourceImpl(link, this);
     }
@@ -61,24 +67,80 @@ public class UriTemplateResourceImpl extends AbstractClientResource<OpenSearchDe
 
   @Override
   public RoleResource getRoleResourceForRoleName(String templateVal) {
-    ResourceLink link = getResourceLink("role", "{roleName}", templateVal);
+    String[] replacables = {"{roleName}"};
+    String[] replacedValus = {templateVal};
+    ResourceLink link = getResourceLink("role", replacables, replacedValus);
     if (link != null) {
       return new RoleResourceImpl(link, this);
     }
     return null;
   }
 
-  public ResourceLink getResourceLink(String relValue, String templateString, String templateVal) {
+
+  public ResourceLink getResourceLink(String relValue, String[] templateString, String[] templateVal) {
     OpenSearchDescriptor descriptor = getLastReadStateOfEntity();
     for (Url url : descriptor.getUrls()) {
       for (Rel rel : url.getRels()) {
         if (relValue.equals(rel.getValue())) {
           String urlStr = url.getTemplate();
-          urlStr = urlStr.replace(templateString, templateVal);
+          for (int i = 0; i < templateString.length; i++) {
+            urlStr = urlStr.replace(templateString[i], templateVal[i]);
+          }
           ResourceLink link = ClientUtil.createResourceLink(relValue, URI.create(urlStr), url.getType());
           return link;
         }
       }
+    }
+    return null;
+  }
+
+ 
+  @Override
+  public PrivilegeResource getPrivilegeResource(String orgUniqueShortName, String privilegeName) {
+    logger.info("Organization short name : " + orgUniqueShortName );
+    logger.info("privilege name : " + privilegeName );
+
+    String[] replacables = {"{organizationUniqueShortName}", "{privilegeName}"};
+    String[] replacedValus = {orgUniqueShortName, privilegeName};
+    ResourceLink link = getResourceLink("privilege", replacables, replacedValus);
+
+
+    if (link != null) {      
+      return new PrivilegeResourceImpl(link, this);
+    }
+    logger.info("Link is null");
+    return null;
+  }
+
+  @Override
+  public SecuredObjectResource getSecuredObjectResource(String orgUniqueShortName, String securedObjectName) {
+    String[] replacables = {"{organizationUniqueShortName}", "{name}"};
+    String[] replacedValus = {orgUniqueShortName, securedObjectName};
+    ResourceLink link = getResourceLink("securedobject", replacables, replacedValus);
+    if (link != null) {
+      return new SecuredObjectResourceImpl(link, this);
+    }
+    return null;
+  }
+
+  @Override
+  public UserGroupResource getUserGroupResource(String orgUniqueShortName, String userGroupName) {    
+    String[] replacables = {"{uniqueShortName}", "{name}"};
+    String[] replacedValus = {orgUniqueShortName, userGroupName};
+    ResourceLink link = getResourceLink("usergroup", replacables, replacedValus);
+    if (link != null) {
+      return new UserGroupResourceImpl(link, this);
+    }
+    return null;
+  }
+
+  @Override
+  public UserResource getUserResource(String orgUniqueShortName, String username) {    
+    String[] replacables = {"{organizationShortName}", "{userName}"};
+    String[] replacedValus = {orgUniqueShortName, username};
+    ResourceLink link = getResourceLink("user", replacables, replacedValus);
+    if (link != null) {
+      return new UserResourceImpl(link, this);
     }
     return null;
   }

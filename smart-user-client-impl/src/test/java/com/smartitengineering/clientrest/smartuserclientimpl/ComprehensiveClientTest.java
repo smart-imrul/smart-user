@@ -890,9 +890,32 @@ public class ComprehensiveClientTest {
     UriTemplateResource resource = rootResource.getTemplateResource();
     OrganizationResource orgResource = resource.getOrganizationForUniqueShortName(SITEL_ORG_SHORT_NAME);
     Assert.assertNotNull(orgResource);
-  }
 
-  @Test
+    UserResource userResource = resource.getUserResource(SITEL_ORG_SHORT_NAME, "modhu");
+    Assert.assertNotNull(userResource);
+    Assert.assertEquals(userResource.getUser().getUser().getUsername(), "modhu");
+
+    PrivilegeResource privilegeResource = resource.getPrivilegeResource(SITEL_ORG_SHORT_NAME, SITEL_ADMIN_USER_PRIVILEGE_TEST_1);
+    Assert.assertNotNull(privilegeResource);
+    Assert.assertEquals(privilegeResource.getPrivilege().getName(), SITEL_ADMIN_USER_PRIVILEGE_TEST_1);
+
+    UserGroupResource userGroupResource = resource.getUserGroupResource(SITEL_ORG_SHORT_NAME,SITEL_USER_GROUP_NAME);
+    Assert.assertNotNull(userGroupResource);
+    Assert.assertEquals(userGroupResource.getUserGroup().getName(), SITEL_USER_GROUP_NAME);
+
+    SecuredObjectResource securedObjectResource = resource.getSecuredObjectResource(SITEL_ORG_SHORT_NAME, USERS_OID_NAME);
+    Assert.assertNotNull(securedObjectResource);
+    Assert.assertEquals(securedObjectResource.getSecuredObjcet().getName(), USERS_OID_NAME);
+
+    RoleResource roleResource = resource.getRoleResourceForRoleName(GlobalRole.ROLE_READ.name());
+    Assert.assertNotNull(roleResource);
+    Assert.assertEquals(roleResource.getRole().getName(), GlobalRole.ROLE_READ.name());
+
+
+
+  }
+/*
+ @Test
   public void doTestDeleteOrganization() throws InterruptedException {
     rootResource = login(USERNAME, PASSWORD);
     System.out.println("------------------------------------------------------------------Smart admin re login");
@@ -953,7 +976,7 @@ public class ComprehensiveClientTest {
       }
     }
   }
-
+*/
   public void verifyAdminPrivilege(RootResource adminPrivilegeTestRootResource) {
 
     LoginResource loginResource = adminPrivilegeTestRootResource.getLoginResource();

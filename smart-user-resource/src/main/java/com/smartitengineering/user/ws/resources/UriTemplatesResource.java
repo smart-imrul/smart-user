@@ -29,9 +29,19 @@ public class UriTemplatesResource extends AbstractResource {
   protected final transient Logger logger = LoggerFactory.getLogger(getClass());
   private static String orgResourceUriTemplate;
   private static String roleResourceUriTemplate;
+  private static String userResourceUriTemplate;
+  private static String privilegeResourceUriTemplate;
+  private static String securedObjectResourceUriTemplate;
+  private static String userGroupResourceUriTemplate;
+ 
   private static OpenSearchDescriptor descriptor;
   private final static String REL_ORG = "org";
   private final static String REL_ROLE = "role";
+  private final static String REL_USER = "user";
+  private final static String REL_PRIVILEGE = "privilege";
+  private final static String REL_SECURED_OBJECT = "securedObject";
+  private final static String REL_USER_GROUP = "userGroup";
+ 
 
   static {
   }
@@ -63,7 +73,45 @@ public class UriTemplatesResource extends AbstractResource {
           }
           UrlBuilder roleBuilder = UrlBuilder.getBuilder().rel(REL_ROLE).template(roleUrlTemplate).
               type(javax.ws.rs.core.MediaType.APPLICATION_ATOM_XML);
-          descBuilder.urls(orgBuilder.build(), roleBuilder.build());
+
+          templateBuilder = getUserUri();
+          final String userUrlTemplate = templateBuilder.toString();
+          if (logger.isInfoEnabled()) {
+            logger.info("User Template URL: " + userUrlTemplate);
+          }
+          UrlBuilder userBuilder = UrlBuilder.getBuilder().rel(REL_USER).template(userUrlTemplate).
+              type(javax.ws.rs.core.MediaType.APPLICATION_ATOM_XML);
+
+          templateBuilder = getPrivilegeUri();
+          final String privilegeUrlTemplate = templateBuilder.toString();
+          if (logger.isInfoEnabled()) {
+            logger.info("Privilege Template URL: " + privilegeUrlTemplate);
+          }
+          UrlBuilder privilegeBuilder = UrlBuilder.getBuilder().rel(REL_PRIVILEGE).template(privilegeUrlTemplate).
+              type(javax.ws.rs.core.MediaType.APPLICATION_ATOM_XML);
+
+          templateBuilder = getSecuredObjectUri();
+          final String securedObjectUrlTemplate = templateBuilder.toString();
+          if (logger.isInfoEnabled()) {
+            logger.info("Secured Object Template URL: " + securedObjectUrlTemplate);
+          }
+          UrlBuilder securedObjectBuilder = UrlBuilder.getBuilder().rel(REL_SECURED_OBJECT).template(
+              securedObjectUrlTemplate).
+              type(javax.ws.rs.core.MediaType.APPLICATION_ATOM_XML);
+
+
+          templateBuilder = getUserGroupUri();
+          final String userGroupUrlTemplate = templateBuilder.toString();
+          if (logger.isInfoEnabled()) {
+            logger.info("User Group Template URL: " + userGroupUrlTemplate);
+          }
+          UrlBuilder userGroupBuilder = UrlBuilder.getBuilder().rel(REL_USER_GROUP).template(userGroupUrlTemplate).
+              type(javax.ws.rs.core.MediaType.APPLICATION_ATOM_XML);
+
+        
+
+          descBuilder.urls(orgBuilder.build(), roleBuilder.build(), userBuilder.build(), privilegeBuilder.build(), securedObjectBuilder.
+              build(), userGroupBuilder.build());
           descriptor = descBuilder.build();
         }
       }
@@ -107,4 +155,49 @@ public class UriTemplatesResource extends AbstractResource {
     }
     return roleResourceUriTemplate;
   }
+
+  private String getUserUri() {
+    if (userResourceUriTemplate == null) {
+      synchronized (this) {
+        if (userResourceUriTemplate == null) {
+          userResourceUriTemplate = getResourceClassUri(OrganizationUserResource.class);
+        }
+      }
+    }
+    return userResourceUriTemplate;
+  }
+
+  private String getPrivilegeUri() {
+    if (privilegeResourceUriTemplate == null) {
+      synchronized (this) {
+        if (privilegeResourceUriTemplate == null) {
+          privilegeResourceUriTemplate = getResourceClassUri(OrganizationPrivilegeResource.class);
+        }
+      }
+    }
+    return privilegeResourceUriTemplate;
+  }
+
+  private String getSecuredObjectUri() {
+    if (securedObjectResourceUriTemplate == null) {
+      synchronized (this) {
+        if (securedObjectResourceUriTemplate == null) {
+          securedObjectResourceUriTemplate = getResourceClassUri(OrganizationSecuredObjectResource.class);
+        }
+      }
+    }
+    return securedObjectResourceUriTemplate;
+  }
+
+  private String getUserGroupUri() {
+    if (userGroupResourceUriTemplate == null) {
+      synchronized (this) {
+        if (userGroupResourceUriTemplate == null) {
+          userGroupResourceUriTemplate = getResourceClassUri(OrganizationUserGroupResource.class);
+        }
+      }
+    }
+    return userGroupResourceUriTemplate;
+  }
+ 
 }
