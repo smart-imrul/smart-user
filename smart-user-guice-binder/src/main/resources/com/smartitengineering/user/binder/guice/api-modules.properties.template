@@ -9,3 +9,5 @@ com.smartitengineering.pos.deleteIntervalInSec=5
 com.smartitengineering.user.cache.resource=com/smartitengineering/user/binder/guice/ehcache.xml
 com.smartitengineering.user.cache.name=userCache
 com.smartitengineering.user.cache.prefixSeparator=|
+com.smartitengineering.user.solr.socketTimeout=1000
+com.smartitengineering.user.solr.connectionTimeout=100

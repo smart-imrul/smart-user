@@ -132,6 +132,7 @@ public class ImplServiceModule extends AbstractModule {
   private final String solrMasterUri;
   private final String cacheConfigRsrc, cacheName;
   private final long waitTime, saveInterval, updateInterval, deleteInterval;
+  private final int solrSocketTimeout, solrConnecxnTimeout;
   static final String PREFIX_SEPARATOR_PROP_KEY = "com.smartitengineering.user.cache.prefixSeparator";
   static final String PREFIX_SEPARATOR_PROP_DEFAULT = "|";
 
@@ -148,6 +149,9 @@ public class ImplServiceModule extends AbstractModule {
     updateInterval = toLong > 0 ? toLong : 60l;
     toLong = NumberUtils.toLong(properties.getProperty("com.smartitengineering.pos.deleteIntervalInSec"), 60L);
     deleteInterval = toLong > 0 ? toLong : 60l;
+    solrSocketTimeout = NumberUtils.toInt(properties.getProperty("com.smartitengineering.user.solr.socketTimeout"), 1000);
+    solrConnecxnTimeout = NumberUtils.toInt(properties.getProperty("com.smartitengineering.user.solr.connectionTimeout"),
+                                            100);
   }
 
   @Override
@@ -166,6 +170,8 @@ public class ImplServiceModule extends AbstractModule {
      * waitTime:long and ExecutorService.class from earlier config
      */
     bind(TimeUnit.class).annotatedWith(Names.named("waitTimeUnit")).toInstance(TimeUnit.SECONDS);
+    bind(Integer.class).annotatedWith(Names.named("socketTimeout")).toInstance(solrSocketTimeout);
+    bind(Integer.class).annotatedWith(Names.named("connectionTimeout")).toInstance(solrConnecxnTimeout);
     bind(SolrQueryDao.class).to(SolrDao.class).in(Scopes.SINGLETON);
     bind(SolrWriteDao.class).to(SolrDao.class).in(Scopes.SINGLETON);
     bind(ServerFactory.class).to(SingletonRemoteServerFactory.class).in(Scopes.SINGLETON);
@@ -558,7 +564,8 @@ public class ImplServiceModule extends AbstractModule {
     bind(new TypeLiteral<CellConfig<Privilege>>() {
     }).toInstance(privilegeConfigImpl);
 
-    bind(PrivilegeService.class).annotatedWith(Names.named("primaryService")).to(PrivilegeServiceImpl.class).in(Singleton.class);
+    bind(PrivilegeService.class).annotatedWith(Names.named("primaryService")).to(PrivilegeServiceImpl.class).in(
+        Singleton.class);
 
     /*
      * Start injection specific to common dao of SecuredObject
@@ -630,7 +637,8 @@ public class ImplServiceModule extends AbstractModule {
     bind(new TypeLiteral<CellConfig<SecuredObject>>() {
     }).toInstance(securedObjectConfigImpl);
 
-    bind(SecuredObjectService.class).annotatedWith(Names.named("primaryService")).to(SecuredObjectServiceImpl.class).in(Singleton.class);
+    bind(SecuredObjectService.class).annotatedWith(Names.named("primaryService")).to(SecuredObjectServiceImpl.class).in(
+        Singleton.class);
     /*
      * Start injection specific to common dao of Person
      */
@@ -701,7 +709,8 @@ public class ImplServiceModule extends AbstractModule {
 
     bind(new TypeLiteral<CellConfig<Person>>() {
     }).toInstance(personConfigImpl);
-    bind(PersonService.class).annotatedWith(Names.named("primaryService")).to(PersonServiceImpl.class).in(Singleton.class);
+    bind(PersonService.class).annotatedWith(Names.named("primaryService")).to(PersonServiceImpl.class).in(
+        Singleton.class);
 
 
     /*
