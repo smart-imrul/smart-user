@@ -14,10 +14,23 @@
   <div id="leftmenu_header_orgdetails_1" class="leftmenu_header"><label>Organization</label></div>
   <div id="leftmenu_body_orgdetails_1" class="leftmenu_body">
     <ul>
+        <c:if test="${it.uniqueShortName!='smart-user'}">
       <li><a href="javascript: Orgpageselect()"><fmt:message key="org.editlink"/></a></li>
-      <li><a href="#"><fmt:message key="org.deletelink"/></a></li>
+      <form method="POST" action ="<c:url value="/orgs/sn/${it.uniqueShortName}/delete"/>" accept="application/json" name="submitform" id="organizationform">
+      <input type="hidden" name="name" value="${it.name}" class="textField">
+      <input type="hidden" name="uniqueShortName" value="${it.uniqueShortName}" class="textField">
+      <input type="hidden" name="streetAddress" value="${it.address.streetAddress}" class="textField">
+      <input type="hidden" name="city" value="${it.address.city}" class="textField">
+      <input type="hidden" name="state" value="${it.address.state}" class="textField">
+      <input type="hidden" name="country" value="${it.address.country}" class="textField">
+      <input type="hidden" name="zip"  class="textField" value="${it.address.zip}">
+      <input type="hidden" name="id" value="${it.id}">
+      <input type="hidden" name="version" value="${it.version}">
+      <li><a href="#" onclick="document.submitform.submit()"><fmt:message key="org.deletelink"/></a></li>
+      </c:if>
       <li><a href="<c:url value="/orgs/sn/${it.uniqueShortName}/users" />"><fmt:message key="org.userlistlink"/></a></li>
     </ul>
+      </form>
   </div>
 </div>
 
@@ -60,7 +73,9 @@
       <input type="hidden" name="zip"  class="textField" value="${it.address.zip}">
       <input type="hidden" name="id" value="${it.id}">
       <input type="hidden" name="version" value="${it.version}">
+      <c:if test="${it.uniqueShortName!='smart-user'}">
       <div class="btnfield"><input type="submit" value="<fmt:message key="org.deleteLevel"/>" name="submitbtn" class="submitbtn"></div>
+      </c:if>
       <div class="clear"></div>
     </form>
   </div>
@@ -96,7 +111,7 @@
       <div><input type="hidden" name="id" value="${it.id}"></div>
       <div class="clear"></div>
       <div></div>
-      <div><input type="hidden" name="version" value="${it.version}"></div>
+<!--      <div><input type="hidden" name="version" value="${it.version}"></div>-->
       <div class="clear"></div>
       <div class="btnfield"><input type="submit" value="<fmt:message key="org.updateLevel"/>" name="submitbtn" class="submitbtn"></div>
       <div class="clear"></div>
